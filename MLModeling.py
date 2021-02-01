@@ -23,6 +23,9 @@ from sklearn.model_selection import GridSearchCV
 from pyearth import Earth
 
 
+#to implement ARIMA
+from pmdarima.arima import auto_arima
+
 #RMSE
 from sklearn.metrics import mean_squared_error
 
@@ -42,10 +45,20 @@ class LinearRegressionModel:
     def __init__(self, df):
         self.df = df
 
-    def linearAccuracy(self, x_train, y_train, x_valid, y_valid):
+    def linearAccuracy(self):
         #setting index as date values
         self.df.index = self.df['Date']
+
+        self.train = self.df[:200]
+        self.valid = self.df[200:]
        
+        #Split data:
+        x_train = self.train.drop('Close', axis=1)
+        y_train = self.train['Close']
+
+        x_valid = self.valid.drop('Close', axis=1)
+        y_valid = self.valid['Close']
+
         x_train = timeToFloat(x_train)
         x_valid = timeToFloat(x_valid)
 
@@ -62,16 +75,18 @@ class LinearRegressionModel:
 
 
 
-    def linearPlot(self, train, valid):
+    def linearPlot(self):
         #plot
-        valid['Predictions'] = 0
-        valid['Predictions'] = self.preds
+        self.valid['Predictions'] = 0
+        self.valid['Predictions'] = self.preds
 
-        valid.index = self.df[200:].index
-        train.index = self.df[:200].index
+        self.valid.index = self.df[200:].index
+        self.train.index = self.df[:200].index
 
-        plt.plot(train['Close'])
-        plt.plot(valid[['Close', 'Predictions']])
+        plt.plot(self.train['Close'])
+        plt.plot(self.valid[['Close', 'Predictions']])
+        plt.title('Linear Regression')
+        plt.show()
 
 #%%
 class KNearestNeighboursModel:
@@ -80,11 +95,25 @@ class KNearestNeighboursModel:
         self.df = df
 
     
-    def knnAccuracy(self, x_train, y_train, x_valid, y_valid):
-        
+    def knnAccuracy(self):
+
+        #setting index as date values
+        self.df.index = self.df['Date']
+
+        self.train = self.df[:200]
+        self.valid = self.df[200:]
+       
+        #Split data:
+        x_train = self.train.drop('Close', axis=1)
+        y_train = self.train['Close']
+
+        x_valid = self.valid.drop('Close', axis=1)
+        y_valid = self.valid['Close']
+
         x_train = timeToFloat(x_train)
         x_valid = timeToFloat(x_valid)
-
+        
+        
 
         #scaling data
         x_train_scaled = scaler.fit_transform(x_train)
@@ -107,17 +136,18 @@ class KNearestNeighboursModel:
         rmse = np.sqrt(mean_squared_error(y_valid, self.preds))
         return rmse
 
-    def knnPlot(self, train, valid):
+    def knnPlot(self):
         #plot
-        valid['Predictions'] = 0
-        valid['Predictions'] = self.preds
+        self.valid['Predictions'] = 0
+        self.valid['Predictions'] = self.preds
 
-        valid.index = self.df[200:].index
-        train.index = self.df[:200].index
+        self.valid.index = self.df[200:].index
+        self.train.index = self.df[:200].index
 
-        plt.plot(train['Close'])
-        plt.plot(valid[['Close', 'Predictions']])
-        
+        plt.plot(self.train['Close'])
+        plt.plot(self.valid[['Close', 'Predictions']])
+        plt.title('KNN')
+        plt.show()
 
 #%%
 
@@ -126,7 +156,20 @@ class MARSmodel:
     def __init__(self, df):
         self.df = df
 
-    def marsAccuracy(self, x_train, y_train, x_valid, y_valid):
+    def marsAccuracy(self):
+
+        #setting index as date values
+        self.df.index = self.df['Date']
+
+        self.train = self.df[:200]
+        self.valid = self.df[200:]
+       
+        #Split data:
+        x_train = self.train.drop('Close', axis=1)
+        y_train = self.train['Close']
+
+        x_valid = self.valid.drop('Close', axis=1)
+        y_valid = self.valid['Close']
 
         x_train = timeToFloat(x_train)
         x_valid = timeToFloat(x_valid)
@@ -144,16 +187,18 @@ class MARSmodel:
         return rmse
 
 
-    def marsPlot(self, train, valid):
+    def marsPlot(self):
         #plot
-        valid['Predictions'] = 0
-        valid['Predictions'] = self.preds
+        self.valid['Predictions'] = 0
+        self.valid['Predictions'] = self.preds
 
-        valid.index = self.df[200:].index
-        train.index = self.df[:200].index
+        self.valid.index = self.df[200:].index
+        self.train.index = self.df[:200].index
 
-        plt.plot(train['Close'])
-        plt.plot(valid[['Close', 'Predictions']])
+        plt.plot(self.train['Close'])
+        plt.plot(self.valid[['Close', 'Predictions']])
+        plt.title('MARS')
+        plt.show()
 
 # %%
 
@@ -162,8 +207,21 @@ class  RandomforestModel:
     def __init__(self, df):
         self.df = df
 
-    def randomfAccuracy(self, x_train, y_train, x_valid, y_valid):
+    def randomfAccuracy(self):
 
+
+        #setting index as date values
+        self.df.index = self.df['Date']
+
+        self.train = self.df[:200]
+        self.valid = self.df[200:]
+       
+        #Split data:
+        x_train = self.train.drop('Close', axis=1)
+        y_train = self.train['Close']
+
+        x_valid = self.valid.drop('Close', axis=1)
+        y_valid = self.valid['Close']
 
         x_train = timeToFloat(x_train)
         x_valid = timeToFloat(x_valid)
@@ -184,16 +242,19 @@ class  RandomforestModel:
         rmse = np.sqrt(mean_squared_error(y_valid, self.preds))
         return rmse
 
-    def randomfPlot(self, train, valid):
+    def randomfPlot(self):
         #plot
-        valid['Predictions'] = 0
-        valid['Predictions'] = self.preds
+        self.valid['Predictions'] = 0
+        self.valid['Predictions'] = self.preds
 
-        valid.index = self.df[200:].index
-        train.index = self.df[:200].index
+        self.valid.index = self.df[200:].index
+        self.train.index = self.df[:200].index
 
-        plt.plot(train['Close'])
-        plt.plot(valid[['Close', 'Predictions']])
+        plt.plot(self.train['Close'])
+        plt.plot(self.valid[['Close', 'Predictions']])
+        plt.title('Random Forest')
+        plt.show()
+        
 
 
 # %%
@@ -204,8 +265,21 @@ class XGBoostModel:
         self.df = df
 
     
-    def xgboostAccuracy(self, x_train, y_train, x_valid, y_valid):
+    def xgboostAccuracy(self):
 
+
+        #setting index as date values
+        self.df.index = self.df['Date']
+
+        self.train = self.df[:200]
+        self.valid = self.df[200:]
+       
+        #Split data:
+        x_train = self.train.drop('Close', axis=1)
+        y_train = self.train['Close']
+
+        x_valid = self.valid.drop('Close', axis=1)
+        y_valid = self.valid['Close']
 
         x_train = timeToFloat(x_train)
         x_valid = timeToFloat(x_valid)
@@ -224,13 +298,62 @@ class XGBoostModel:
         return rmse
 
     
-    def xgboostPlot(self, train, valid):
+    def xgboostPlot(self):
         #plot
-        valid['Predictions'] = 0
-        valid['Predictions'] = self.preds
+        self.valid['Predictions'] = 0
+        self.valid['Predictions'] = self.preds
 
-        valid.index = self.df[200:].index
-        train.index = self.df[:200].index
+        self.valid.index = self.df[200:].index
+        self.train.index = self.df[:200].index
 
+        plt.plot(self.train['Close'])
+        plt.plot(self.valid[['Close', 'Predictions']])
+        plt.title('XGBoost')
+        plt.show()
+
+
+
+
+#%%
+
+class ARIMAModel:
+#use the ‘Augmented Dickey-Fuller Test’ to check whether the data is stationary or not. 
+
+    def __init__(self, df):
+        self.df = df
+    
+    
+    def srationaryChick(self):
+        from pmdarima.arima import ADFTest
+
+        adfTest = ADFTest(alpha = 0.05)
+        print(adfTest.should_diff(self.df))
+
+
+    def ARIMAAccuracy(self, train, valid):
+
+        training = train['Close']
+        validation = valid['Close']
+
+        #In the Auto ARIMA model, note that small p,d,q values represent non-seasonal components, and capital P, D, Q represent seasonal components.
+        #It works similarly like hyper tuning techniques to find the optimal value of p, d, and q with different combinations and the final values would be determined with the lower AIC, BIC parameters taking into consideration.
+        model = auto_arima(training, start_p = 0, start_q = 0, max_p = 5, max_q = 5, m = 12,start_P = 0, seasonal = True, d = 1, D = 1, trace = True, error_action='warn', suppress_warnings = True)
+        model.fit(training)
+
+        self.forecast = model.predict(n_periods = 42)
+        self.forecast = pd.DataFrame(self.forecast,index = valid.index,columns=['Prediction'])
+
+        rms = np.sqrt(np.mean(np.power((np.array(valid['Close'])-np.array(self.forecast['Prediction'])),2)))
+
+        return rms
+
+
+    def ARIMAPlot(self, train, valid):
+        #plot
         plt.plot(train['Close'])
-        plt.plot(valid[['Close', 'Predictions']])
+        plt.plot(valid['Close'])
+        plt.plot(self.forecast['Prediction'])
+        plt.title('ARIMA')
+        plt.show()
+# %%
+

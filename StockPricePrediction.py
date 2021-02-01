@@ -3,7 +3,12 @@
 # Here I am trying to learn how to predict the future close price. 
 #https://www.quandl.com/data/DCE/IX2020-Iron-Ore-Futures-November-2020-IX2020
 
-#%% import libraries
+# %% import libraries
+import pandas as pd 
+import numpy as np
+
+#for visualizing
+import matplotlib.pyplot as plt
 
 from DiscoveringData import DiscData
 from PrepareData import PreparingData
@@ -14,47 +19,51 @@ from MLModeling import KNearestNeighboursModel
 from MLModeling import MARSmodel
 from MLModeling import RandomforestModel
 from MLModeling import XGBoostModel
+from MLModeling import ARIMAModel
+
+#LSTM
+from DLModeling import LSTMModel
 
 
-import pandas as pd 
-import numpy as np
-
-#for visualizing
-import matplotlib.pyplot as plt
 
 
-#%%read data
+# %%read data
 df = pd.read_csv('DCE-IX2020.csv')
 
-#%%
+# %%
 #setting index as date values
 df.index = df['Date']
        
 #sorting
 df = df.sort_index(ascending=True, axis=0)
 
+#creating a separate dataset
+newData = pd.DataFrame(index=range(0,len(df)),columns=['Date', 'Close'])
+
+for i in range(0,len(df)):
+    newData['Date'][i] = df['Date'][i]
+    newData['Close'][i] = df['Close'][i]
+
+newData['Date'] = pd.to_datetime(newData['Date'])
+newData.set_index('Date', inplace = True)
+
 
 #split the dataframe into train and validation sets to verify our predictions
-#we cannot use random splitting since that will destroy the time component. So here we have set the last year’s data into validation and the 4 years’ data before that into train set.       
-train = df[:200]
-valid = df[200:]
+#we cannot use random splitting since that will destroy the time component.       
+train = newData[:200]
+valid = newData[200:]
 
-#%% Split data:
-x_train = train.drop('Close', axis=1)
-y_train = train['Close']
 
-x_valid = valid.drop('Close', axis=1)
-y_valid = valid['Close']
 
 # %% Discovering Data:
 
 # Create an object of DiscData class inside DiscoveringData.py file.
 dis = DiscData(df)
 
-#%%
+# %%
 #To plot the relationships between columns:
-#This diagram helps us try to figure out is there some kind of relationship between variables:
-#Aa the graph illustrets, the relationships between columns almost linear unless with the last three columns: #This diagram helps us try to figure out is there some kind of relationship between variables: Volume, Open, and Turnover
+#This diagram illustrets, the relationships between columns.
+#It almost linear unless with the last three columns: Volume, Open, and Turnover
 dis.plotRelation()
 
 
@@ -92,54 +101,73 @@ dis.plotCloseHist()
 #prep.Correlation()
 
 
-#%% Modleing 
+# %% Modleing 
 #Create an object of LinearRegressionModel class from Modeling.py file
 linearModel = LinearRegressionModel(df)
 
-linearModel.linearAccuracy(x_train, y_train, x_valid, y_valid)
+linearModel.linearAccuracy()
 # Applying Linear Regrassion gives me a root mean square deviation = 41
 
 #This is how the plot looks like:
-linearModel.linearPlot(train, valid)
-#%%
+linearModel.linearPlot()
+# %%
 #Create an object of KNearestNeighboursModel class from Modeling.py file
 knnModel = KNearestNeighboursModel(df)
 
-knnModel.knnAccuracy(x_train, y_train, x_valid, y_valid)
+knnModel.knnAccuracy()
 #Applying K Nearest Neighbours gives me a root mean square deviation = 326 which gives us a significant error in general and in comparison to the Linear Regression. 
 
 #This is how the plot looks like:
-knnModel.knnPlot(train, valid)
+knnModel.knnPlot()
 
-#%%
+# %%
 #Create an object of MARSmodel class from Modeling.py file
 marsModel = MARSmodel(df)
 
-marsModel.marsAccuracy(x_train, y_train, x_valid, y_valid)
+marsModel.marsAccuracy()
 # Applying MARS gives me a root mean square deviation = 42 which is kind of similar to Linear Regression and much improvement in comparison to K Nearest Neighbours.
 
 #This is how the plot looks like:
-marsModel.marsPlot(train, valid)
+marsModel.marsPlot()
 
-#%%
+# %%
 #Create an object of RandomforestModel class from Modeling.py file
 randomfModel = RandomforestModel(df)
 
-randomfModel.randomfAccuracy(x_train, y_train, x_valid, y_valid)
+randomfModel.randomfAccuracy()
 # Applying Random Forest gives me a root mean square deviation = 95.8. It's better than wK Nearest Neighbours.
 # However it still worest than Linear Regression and MARS.
 
 #This is how the plot looks like:
-randomfModel.randomfPlot(train, valid)
+randomfModel.randomfPlot()
 
 
-#%%
+# %%
 #Create an object of XGBoostModel class from Modeling.py file
 xgboostModel = XGBoostModel(df)
 
-xgboostModel.xgboostAccuracy(x_train, y_train, x_valid, y_valid)
+xgboostModel.xgboostAccuracy()
 # Applying XGBoost is the best with root mean square deviation = 31.7.
 
 #This is how the plot looks like:
-xgboostModel.xgboostPlot(train, valid)
+xgboostModel.xgboostPlot()
 
+# %%
+arimaModel = ARIMAModel(newData)
+
+arimaModel.srationaryChick()
+
+arimaModel.ARIMAAccuracy(train, valid)
+
+arimaModel.ARIMAPlot(train, valid)
+
+# %%
+
+lstmModel = LSTMModel(df)
+
+lstmModel.LSTMAccuracy()
+
+lstmModel.LSTMPlot()
+
+
+# %%
